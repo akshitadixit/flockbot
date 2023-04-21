@@ -3,6 +3,7 @@ from __future__ import print_function
 import os.path
 
 from sanic import Sanic, response
+from sanic.log import logger
 import json
 import requests
 
@@ -57,10 +58,13 @@ async def main_func(team_name=None):
             print('No data found.')
             return
 
+        logger.info(team_name)
+
 
         if team_name:
-            values = [row for row in values if row[0].lower() == team_name]
+            values = [row for row in values if row[0].casefold() == team_name.casefold()]
         # Format the on-call information as a message
+
         message = 'Current On-Call:'
         for row in values:
             team = row[0]
@@ -72,50 +76,54 @@ async def main_func(team_name=None):
             l3_contact = row[8] + ', ' + row[9]
             message += f'\n\nTeam: {team}\nL1: {l1_dev} ({l1_contact})\nL2: {l2_dev} ({l2_contact})\nL3: {l3_dev} ({l3_contact})'
 
-        print(message)
+        logger.info(message)
+        return message
     except HttpError as err:
         print(err)
 
-async def send_message(to, text):
+async def send_message(to, text, user):
+    token = "64a51589-2e97-4a12-863e-41dcca5301f9"
+    payload = f"to={to}&text={text}&token={token}&onBehalfOf={user}"
+
     headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {BOT_TOKEN}'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': str(len(payload)),
     }
-    data = {
-        'to': to,
-        'text': text
-    }
-    response = requests.post('https://api.flock.com/v1/chat.sendMessage', headers=headers, json=data)
-    response.raise_for_status()
+
+    response = requests.post('https://api.flock.com/hooks/sendMessage/31436eeb-8e01-4f50-bcd4-9b5f958a60d1', data=payload, headers=headers)
+
 
 @app.route('/')
 def home(request):
-    return response.text('Hello world!')
+    return response.text('Thanks for installing the On-Call Bot! Type /oncall to get the current on-call information for all teams or use /oncall team-name to get the on-call information for a specific team.')
 
 # Define a route for the Flock event listener
 @app.route('/events', methods=['POST'])
 async def events(request):
     data = request.json
+    logger.info(data)
     # Check if the event is a Flock App installation event
     # if data['name'] == 'app.install':
     #     # Send a welcome message to the user who installed the App
     #     user_id = data['userId']
     #     message = 'Thanks for installing the On-Call Bot! Type /oncall to get the current on-call information or use #oncall Team-Name to get the on-call information for a specific team.'
     #     send_message(user_id, message)
-    return response.json({}, status=200)
+    return response.json(data, status=200)
 
 @app.route('/oncall', methods=['POST'])
 async def oncall(request):
-    data = request.form
+    data = request.json
+    logger.info(f"data incoming: {data}")
     team_name = data.get('text', '').strip().lower().replace('#oncall', '')
     # Get the current on-call information from the Google Sheet
 
     message = await main_func(team_name=team_name)
     # Send the message to the Flock group
     group_id = data['chat']
-    send_message(group_id, message)
+    user_id = data['userId']
+    await send_message(group_id, message, user_id)
     return response.text('')
 
 
 if __name__ == '__main__':
-    app.run(host='http://16.170.222.151/', port=8000)
+    app.run(debug=True)

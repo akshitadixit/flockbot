@@ -1,0 +1,25 @@
+[2023-04-21 09:45:07 +0000] [12967] [DEBUG] Creating multiprocessing context using 'spawn'
+[2023-04-21 09:45:07 +0000] [12967] [DEBUG] Starting a process: Sanic-Server-0-0
+[2023-04-21 09:45:07 +0000] [12976] [DEBUG] Process ack: Sanic-Server-0-0 [12976]
+[2023-04-21 09:45:07 +0000] [12976] [INFO] Starting worker [12976]
+
+[2023-04-21 09:45:14 +0000] [12976] [INFO] data incoming: {'chat': 'g:791c426bee414cff9a8c819f205b551a', 'name': 'client.slashCommand', 'chatName': 'OnCall Bot', 'text': 'cart', 'userName': 'Akshita  Dixit', 'locale': 'en-us', 'userId': 'u:xwhw7fhxb7wwwlle', 'command': 'oncall'}
+Current On-Call:
+Team: cart
+L1: dev1 (123, dev1@1mg.com)
+L2: dev2 (234, dev2@1mg.com)
+L3: dev3 (345, dev3@1mg.com)
+
+[2023-04-21 09:45:14 +0000] [12976] [INFO] None    cart
+[2023-04-21 09:45:15 +0000] [12976] [INFO] {'uid': '1682070315239-tHM-m202'}
+
+[2023-04-21 09:45:15 +0000] - (sanic.access)[INFO][127.0.0.1:57444]: POST http://127.0.0.1:8000/oncall  200 0
+
+Executing <Task finished name='Task-5' coro=<HttpProtocol.connection_task() done, defined at /home/ubuntu/.local/lib/python3.10/site-packages/sanic/server/protocols/http_protocol.py:139> result=None created at /home/ubuntu/.local/lib/python3.10/site-packages/sanic/server/protocols/http_protocol.py:265> took 1.235 seconds
+^C[2023-04-21 09:46:27 +0000] [12967] [INFO] Received signal SIGINT. Shutting down.
+[2023-04-21 09:46:27 +0000] [12967] [DEBUG] Terminating a process: Sanic-Server-0-0 [12976]
+[2023-04-21 09:46:27 +0000] [12967] [INFO] Server Stopped
+[2023-04-21 09:46:27 +0000] [12976] [INFO] Stopping worker [12976]
+
+
+https://api.flock.com/hooks/sendMessage/31436eeb-8e01-4f50-bcd4-9b5f958a60d1
