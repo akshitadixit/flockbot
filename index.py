@@ -118,4 +118,4 @@ async def oncall(request):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='http://16.170.222.151/', port=8000)
