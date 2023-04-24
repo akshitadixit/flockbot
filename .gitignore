@@ -5,3 +5,4 @@ csr.pem
 credentials.json
 token.json
 api/*
+ssl/*

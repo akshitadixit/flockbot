@@ -3,7 +3,13 @@ FROM python:3.10
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
-    python3-pip
+    python3-pip \
+    nginx
+
+# # run nginx using config file
+# RUN rm /etc/nginx/sites-enabled/default
+# COPY nginx.conf /etc/nginx/sites-enabled/
+# RUN service nginx start
 
 # copy app files
 COPY . .
