@@ -110,7 +110,7 @@ async def events(request):
     #     send_message(user_id, message)
     return response.json(data, status=200)
 
-@app.route('/oncall', methods=['POST'])
+@app.route('/webhook', methods=['POST'])
 async def oncall(request):
     data = request.json
     logger.info(f"data incoming: {data}")
