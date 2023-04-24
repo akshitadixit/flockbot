@@ -55,48 +55,54 @@ async def main_func(team_name=None):
         values = result.get('values', [])
 
         if not values:
-            print('No data found.')
-            return
+            return 'No data found.'
 
-        logger.info(team_name)
-
+        logger.info(f'ok"{team_name}"')
+        logger.info(values)
 
         if team_name:
-            values = [row for row in values if row[0].casefold() == team_name.casefold()]
-        # Format the on-call information as a message
+            if team_name.casefold()!='all':
+                values = [row for row in values if row[0].casefold() == team_name.casefold()]
+                if not values:
+                    return 'Invalid Team Name! Please check from https://docs.google.com/spreadsheets/d/1iMxqOcGNqflEmSdOCsubryoH7El7cWKTxvK2wUy5QsM/edit?usp=sharing'
 
-        message = 'Current On-Call:'
-        for row in values:
-            team = row[0]
-            l1_dev = row[1]
-            l1_contact = row[2] + ', ' + row[3]
-            l2_dev = row[4]
-            l2_contact = row[5] + ', ' + row[6]
-            l3_dev = row[7]
-            l3_contact = row[8] + ', ' + row[9]
-            message += f'\n\nTeam: {team}\nL1: {l1_dev} ({l1_contact})\nL2: {l2_dev} ({l2_contact})\nL3: {l3_dev} ({l3_contact})'
+            # Format the on-call information as a message
+            message = 'Current On-Call:'
+            for row in values:
+                team = row[0]
+                l1_dev = row[1]
+                l1_contact = row[2] + ', ' + row[3]
+                l2_dev = row[4]
+                l2_contact = row[5] + ', ' + row[6]
+                l3_dev = row[7]
+                l3_contact = row[8] + ', ' + row[9]
+                message += f'\n\nTeam: {team}\nL1: {l1_dev} ({l1_contact})\nL2: {l2_dev} ({l2_contact})\nL3: {l3_dev} ({l3_contact})'
+                message += '\n\n For discrepancies, please edit here: https://docs.google.com/spreadsheets/d/1iMxqOcGNqflEmSdOCsubryoH7El7cWKTxvK2wUy5QsM/edit?usp=sharing'
 
-        logger.info(message)
+        else:
+            message = ''
+
+        logger.info(f'message: {message}')
         return message
+
     except HttpError as err:
         print(err)
 
 async def send_message(to, text, user):
-    token = "64a51589-2e97-4a12-863e-41dcca5301f9"
-    payload = f"to={to}&text={text}&token={token}&onBehalfOf={user}"
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': str(len(payload)),
+    payload = {
+    'text': text,
     }
 
-    response = requests.post('https://api.flock.com/hooks/sendMessage/31436eeb-8e01-4f50-bcd4-9b5f958a60d1', data=payload, headers=headers)
+    headers = {
+        'Content-Type': 'application/json',}
+
+    response = requests.post('https://api.flock.com/hooks/sendMessage/31436eeb-8e01-4f50-bcd4-9b5f958a60d1', data=json.dumps(payload), headers=headers)
+
 
 
 @app.route('/')
 def home(request):
     return response.text('Thanks for installing the On-Call Bot! Type /oncall to get the current on-call information for all teams or use /oncall team-name to get the on-call information for a specific team.')
-
 # Define a route for the Flock event listener
 @app.route('/events', methods=['POST'])
 async def events(request):
@@ -114,16 +120,20 @@ async def events(request):
 async def oncall(request):
     data = request.json
     logger.info(f"data incoming: {data}")
-    team_name = data.get('text', '').strip().lower().replace('#oncall', '')
+    if not data.get('text', '').strip().lower().startswith('!oncall'):
+        return response.text('')
+
+    team_name = data.get('text', '').strip().lower().replace('!oncall', '').strip()
     # Get the current on-call information from the Google Sheet
 
     message = await main_func(team_name=team_name)
     # Send the message to the Flock group
-    group_id = data['chat']
-    user_id = data['userId']
+    group_id = data['to']
+    user_id = data['from']
     await send_message(group_id, message, user_id)
     return response.text('')
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+

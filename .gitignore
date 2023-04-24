@@ -1,1 +1,7 @@
 .vercel
+.nginx-conf
+certificate.pem
+csr.pem
+credentials.json
+token.json
+api/*
